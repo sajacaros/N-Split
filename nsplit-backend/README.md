@@ -4,7 +4,7 @@ N-Split 메인 서버 - 사용자 인증, 세션 관리, 자동 매매 로직을
 
 ## 기술 스택
 
-- Python 3.11+
+- Python 3.12
 - FastAPI
 - SQLAlchemy 2.0
 - PostgreSQL
@@ -13,6 +13,21 @@ N-Split 메인 서버 - 사용자 인증, 세션 관리, 자동 매매 로직을
 - APScheduler
 
 ## 설치
+
+### uv 사용 (권장)
+
+```bash
+# uv 설치 (없는 경우)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 패키지 설치 및 가상환경 생성
+uv sync
+
+# 환경 변수 설정
+cp .env.example .env
+```
+
+### pip 사용 (기존 방식)
 
 ```bash
 # 가상환경 생성
@@ -44,7 +59,16 @@ SIMULATOR_API_KEY=shared-secret-key
 
 ## 실행
 
+### uv 사용
+
 ```bash
+uv run uvicorn app.main:app --reload --port 8000
+```
+
+### pip 사용
+
+```bash
+source venv/bin/activate  # Windows: venv\Scripts\activate
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -92,7 +116,9 @@ nsplit-backend/
 │   ├── dependencies.py  # FastAPI 의존성
 │   └── main.py          # FastAPI 앱
 ├── .env.example
-├── requirements.txt
+├── .python-version
+├── pyproject.toml
+├── requirements.txt       # 호환성 유지
 └── README.md
 ```
 

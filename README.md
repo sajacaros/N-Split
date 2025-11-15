@@ -23,7 +23,8 @@ N-Split/
 
 ### 사전 요구사항
 
-- Python 3.11+
+- Python 3.12
+- [uv](https://docs.astral.sh/uv/) (Python 패키지 매니저) 또는 pip
 - Node.js 18+
 - PostgreSQL 15+
 - Google OAuth 2.0 Credentials
@@ -37,6 +38,27 @@ createdb simulator
 ```
 
 ### 2. N-Split Backend 설정
+
+#### uv 사용 (권장)
+
+```bash
+cd nsplit-backend
+
+# uv 설치 (없는 경우)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 패키지 설치 및 가상환경 생성
+uv sync
+
+# 환경 변수 설정
+cp .env.example .env
+# .env 파일을 편집하여 필요한 값 입력
+
+# 서버 실행
+uv run uvicorn app.main:app --reload --port 8000
+```
+
+#### pip 사용 (기존 방식)
 
 ```bash
 cd nsplit-backend
@@ -57,6 +79,24 @@ uvicorn app.main:app --reload --port 8000
 ```
 
 ### 3. Simulator Backend 설정
+
+#### uv 사용 (권장)
+
+```bash
+cd simulator-backend
+
+# 패키지 설치 및 가상환경 생성
+uv sync
+
+# 환경 변수 설정
+cp .env.example .env
+# .env 파일을 편집하여 필요한 값 입력
+
+# 서버 실행
+uv run uvicorn app.main:app --reload --port 8001
+```
+
+#### pip 사용 (기존 방식)
 
 ```bash
 cd simulator-backend
