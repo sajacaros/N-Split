@@ -4,7 +4,7 @@
 
 ## 기술 스택
 
-- Python 3.11+
+- Python 3.12
 - FastAPI
 - SQLAlchemy 2.0
 - PostgreSQL
@@ -12,6 +12,21 @@
 - APScheduler
 
 ## 설치
+
+### uv 사용 (권장)
+
+```bash
+# uv 설치 (없는 경우)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 패키지 설치 및 가상환경 생성
+uv sync
+
+# 환경 변수 설정
+cp .env.example .env
+```
+
+### pip 사용 (기존 방식)
 
 ```bash
 # 가상환경 생성
@@ -39,7 +54,16 @@ DEFAULT_VOLATILITY=3.0
 
 ## 실행
 
+### uv 사용
+
 ```bash
+uv run uvicorn app.main:app --reload --port 8001
+```
+
+### pip 사용
+
+```bash
+source venv/bin/activate  # Windows: venv\Scripts\activate
 uvicorn app.main:app --reload --port 8001
 ```
 
@@ -88,7 +112,9 @@ simulator-backend/
 │   ├── dependencies.py  # FastAPI 의존성
 │   └── main.py          # FastAPI 앱
 ├── .env.example
-├── requirements.txt
+├── .python-version
+├── pyproject.toml
+├── requirements.txt       # 호환성 유지
 └── README.md
 ```
 
