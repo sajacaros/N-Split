@@ -13,47 +13,53 @@ N-Split/
 
 ## 주요 기능
 
-- **Google OAuth 2.0 인증**: 안전한 사용자 관리
+- **간편한 개발 인증**: 개발 모드에서는 username만으로 즉시 시작
 - **세션 관리**: 종목별 자동 매매 설정 및 관리
 - **자동 매매**: 5초 간격으로 매수/매도 조건 모니터링 및 자동 실행
 - **시뮬레이션 모드**: 가상 주가와 계좌로 안전하게 테스트
 - **실시간 모니터링**: 포지션 상태 및 이벤트 타임라인 실시간 업데이트
+- **SQLite 기본 지원**: 별도 DB 설치 없이 바로 실행 가능
 
 ## 빠른 시작
 
 ### 사전 요구사항
 
-- Python 3.11+
+- Python 3.12+
+- [uv](https://github.com/astral-sh/uv) (Python 패키지 관리자)
 - Node.js 18+
-- PostgreSQL 15+
-- Google OAuth 2.0 Credentials
+- **데이터베이스 불필요** (SQLite 자동 생성)
+
+**uv 설치**
+```bash
+# macOS/Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# pip으로 설치
+pip install uv
+```
 
 ### 1. 데이터베이스 설정
 
-```bash
-# PostgreSQL에 두 개의 데이터베이스 생성
-createdb nsplit
-createdb simulator
-```
+별도 설정 불필요! SQLite 파일이 자동으로 생성됩니다.
+- `nsplit-backend/nsplit.db`
+- `simulator-backend/simulator.db`
 
 ### 2. N-Split Backend 설정
 
 ```bash
 cd nsplit-backend
 
-# 가상환경 생성 및 활성화
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+# uv로 의존성 설치 (가상환경 자동 생성)
+uv sync
 
-# 패키지 설치
-pip install -r requirements.txt
-
-# 환경 변수 설정
+# 환경 변수 설정 (선택사항, 기본값으로 실행 가능)
 cp .env.example .env
-# .env 파일을 편집하여 필요한 값 입력
 
 # 서버 실행
-uvicorn app.main:app --reload --port 8000
+uv run uvicorn app.main:app --reload --port 8000
 ```
 
 ### 3. Simulator Backend 설정
@@ -61,19 +67,14 @@ uvicorn app.main:app --reload --port 8000
 ```bash
 cd simulator-backend
 
-# 가상환경 생성 및 활성화
-python -m venv venv
-source venv/bin/activate
+# uv로 의존성 설치 (가상환경 자동 생성)
+uv sync
 
-# 패키지 설치
-pip install -r requirements.txt
-
-# 환경 변수 설정
+# 환경 변수 설정 (선택사항, 기본값으로 실행 가능)
 cp .env.example .env
-# .env 파일을 편집하여 필요한 값 입력
 
 # 서버 실행
-uvicorn app.main:app --reload --port 8001
+uv run uvicorn app.main:app --reload --port 8001
 ```
 
 ### 4. Frontend 설정
@@ -84,32 +85,28 @@ cd nsplit-frontend
 # 패키지 설치
 npm install
 
-# 환경 변수 설정
+# 환경 변수 설정 (선택사항, 기본값으로 실행 가능)
 cp .env.example .env
-# .env 파일을 편집하여 API URL 입력
 
 # 개발 서버 실행
 npm run dev
 ```
 
-## Google OAuth 설정
-
-1. [Google Cloud Console](https://console.cloud.google.com/) 접속
-2. 프로젝트 생성 또는 선택
-3. "APIs & Services" > "Credentials" 이동
-4. "Create Credentials" > "OAuth 2.0 Client ID" 선택
-5. Application type: Web application
-6. Authorized redirect URIs 추가:
-   - `http://localhost:5173/auth/callback`
-7. Client ID와 Client Secret을 `.env` 파일에 입력
-
 ## 사용 방법
 
 ### 1. 로그인
 
+**개발 모드 (기본)**
 1. 브라우저에서 `http://localhost:5173` 접속
-2. "Login with Google" 버튼 클릭
-3. Google 계정으로 인증
+2. Username 입력 (예: `testuser`)
+3. 로그인 - 자동으로 계정 생성됨
+
+**API 직접 호출**
+```bash
+curl -X POST http://localhost:8000/api/auth/dev/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "testuser"}'
+```
 
 ### 2. 세션 생성
 
@@ -152,17 +149,20 @@ npm run dev
 
 - **FastAPI**: REST API 서버
 - **SQLAlchemy**: ORM
-- **PostgreSQL**: 데이터베이스
+- **SQLite**: 데이터베이스 (개발), PostgreSQL (프로덕션)
 - **APScheduler**: 자동 매매 Worker (5초 간격)
 - **JWT**: 인증 토큰
+- **개발 인증**: Username 기반 간편 로그인
+- **uv**: 빠른 Python 패키지 관리
 
 ### Simulator Backend
 
 - **FastAPI**: REST API 서버
 - **SQLAlchemy**: ORM
-- **PostgreSQL**: 데이터베이스
+- **SQLite**: 데이터베이스 (개발), PostgreSQL (프로덕션)
 - **NumPy**: 주가 시뮬레이션
 - **APScheduler**: 주가 업데이트 Worker (5초 간격)
+- **uv**: 빠른 Python 패키지 관리
 
 ### Frontend
 
@@ -175,14 +175,37 @@ npm run dev
 ## 개발 로드맵
 
 - [x] Phase 0: 프로젝트 구조 및 환경 설정
-- [x] Phase 1: 인증 시스템 (Google OAuth, JWT)
+- [x] Phase 1: 인증 시스템 (개발 인증, JWT)
 - [x] Phase 2: 세션 및 포지션 CRUD API
 - [x] Phase 3: 시뮬레이터 Backend
 - [x] Phase 4: 자동 매매 Worker
 - [x] Phase 5: React Frontend
+- [x] Phase 5.5: SQLite 전환 및 개발 환경 최적화
 - [ ] Phase 6: 테스트 및 문서화
-- [ ] Phase 7: 실제 증권사 API 연동
-- [ ] Phase 8: 백테스팅 및 고급 기능
+- [ ] Phase 7: Google OAuth 연동
+- [ ] Phase 8: 실제 증권사 API 연동
+- [ ] Phase 9: PostgreSQL 마이그레이션
+- [ ] Phase 10: 백테스팅 및 고급 기능
+
+## 프로덕션 배포
+
+### PostgreSQL 사용
+
+`.env` 파일에서 DATABASE_URL 변경:
+```
+DATABASE_URL=postgresql://user:password@localhost:5432/nsplit
+```
+
+### Google OAuth 활성화
+
+1. [Google Cloud Console](https://console.cloud.google.com/)에서 OAuth 2.0 Credentials 생성
+2. `.env` 파일 설정:
+```
+DEV_MODE=false
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+GOOGLE_REDIRECT_URI=https://yourdomain.com/auth/callback
+```
 
 ## 라이선스
 

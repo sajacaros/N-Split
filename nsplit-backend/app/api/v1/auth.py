@@ -12,14 +12,65 @@ from app.auth import (
     create_access_token,
 )
 from app.dependencies import get_current_user
+from app.config import settings
+from pydantic import BaseModel
 import httpx
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
+class DevLoginRequest(BaseModel):
+    username: str
+
+
+@router.post("/dev/login", response_model=TokenResponse)
+async def dev_login(
+    request: DevLoginRequest,
+    db: Session = Depends(get_db),
+):
+    """Development mode login - bypasses Google OAuth"""
+    if not settings.DEV_MODE:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Dev login is only available in development mode",
+        )
+
+    # Check if user exists
+    user = db.query(User).filter(User.email == f"{request.username}@dev.local").first()
+
+    if not user:
+        # Create new dev user
+        user = User(
+            google_id=f"dev_{request.username}",
+            email=f"{request.username}@dev.local",
+            name=request.username,
+            profile_picture_url=None,
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        # Create simulator account for new user
+        await create_simulator_account(str(user.id))
+    else:
+        # Update last login
+        user.last_login_at = datetime.utcnow()
+        db.commit()
+
+    # Create JWT token
+    access_token = create_access_token(data={"user_id": str(user.id), "email": user.email})
+
+    return TokenResponse(access_token=access_token)
+
+
 @router.get("/google/url")
 async def get_google_login_url():
     """Get Google OAuth login URL"""
+    if not settings.GOOGLE_CLIENT_ID:
+        raise HTTPException(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            detail="Google OAuth is not configured. Use /auth/dev/login in development mode.",
+        )
     url = get_google_auth_url()
     return {"url": url}
 

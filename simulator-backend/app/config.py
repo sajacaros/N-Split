@@ -3,10 +3,10 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Database
-    DATABASE_URL: str
+    DATABASE_URL: str = "sqlite:///./simulator.db"
 
     # API Security
-    API_KEY: str
+    API_KEY: str = "dev-api-key"
 
     # Simulator Settings
     DEFAULT_INITIAL_CASH: int = 10000000

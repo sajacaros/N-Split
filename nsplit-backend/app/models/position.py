@@ -1,15 +1,15 @@
 import uuid
 from sqlalchemy import Column, String, DateTime, Integer, Numeric, ForeignKey, Index
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.database import Base
+from app.models.guid import GUID
 
 
 class Position(Base):
     __tablename__ = "positions"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    session_id = Column(UUID(as_uuid=True), ForeignKey("sessions.id", ondelete="CASCADE"), nullable=False)
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    session_id = Column(GUID(), ForeignKey("sessions.id", ondelete="CASCADE"), nullable=False)
 
     # Position info
     step_number = Column(Integer, nullable=False)

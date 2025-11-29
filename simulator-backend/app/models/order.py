@@ -1,15 +1,15 @@
 import uuid
 from sqlalchemy import Column, String, Numeric, DateTime, ForeignKey, func, Integer
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.database import Base
+from app.models.guid import GUID
 
 
 class SimOrder(Base):
     __tablename__ = "sim_orders"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    account_id = Column(UUID(as_uuid=True), ForeignKey("sim_accounts.id", ondelete="CASCADE"), nullable=False)
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    account_id = Column(GUID(), ForeignKey("sim_accounts.id", ondelete="CASCADE"), nullable=False)
     stock_code = Column(String(10), nullable=False)
     order_type = Column(String(10), nullable=False)  # buy, sell
     price = Column(Numeric(12, 2), nullable=False)
